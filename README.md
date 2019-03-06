@@ -1,2 +1,2 @@
-# osu-Archive
+# osu-archive
 A simple osu! archive
