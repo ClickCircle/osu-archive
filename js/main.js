@@ -26,7 +26,7 @@ function draw(data) {
 
   const margin = {
     left: 50,
-    right: 0,
+    right: 80,
     top: 50,
     bottom: 0
   };
@@ -117,7 +117,8 @@ function draw(data) {
     dataSort();
 
     d3.transition("2")
-      .each(redraw);
+      .each(redraw)
+      .each(change);
     lastData = currentData;
   }
 
@@ -215,6 +216,122 @@ function draw(data) {
           return "0px";
         }
         return "1px";
+      })
+      .attr("stroke", function (d) {
+      return "#009988";
+      });
+
+    barEnter
+        .append("text")
+        .attr("x", function () {
+          return xScale(currentData[currentData.length - 1].value);
+        })
+        .attr("y", 50)
+        .attr("fill-opacity", 0)
+        .style("fill", "#123456")
+        .transition()
+        .duration(200)
+        .tween("text", function (d) {
+          var self = this;
+          // 初始值为d.value的0.9倍
+          self.textContent = d.value * 0.9;
+          var i = d3.interpolate(self.textContent, Number(d.value)),
+            prec = (Number(d.value) + "").split("."),
+            round = prec.length > 1 ? Math.pow(10, prec[1].length) : 1;
+          // d.value = self.textContent
+          return function (t) {
+            self.textContent = d3.format(".0f")(
+              Math.round(i(t) * round) / round
+            );
+            // d.value = self.textContent
+          };
+        })
+        .attr("fill-opacity", 1)
+        .attr("y", 0)
+        .attr("class", function (d) {
+          return "value";
+        })
+        .attr("x", d => {
+          return xScale(xValue(d)) + 10;
+        })
+        .attr("y", 22);
+
+    var barUpdate = bar
+      .transition("2")
+      .duration(250)
+      .ease(d3.easeLinear);
+
+    barUpdate
+      .select("rect")
+      .style("fill", "#009988")
+      .attr("width", d => xScale(xValue(d)));
+
+    var barInfo = barUpdate
+      .select(".barInfo")
+      .text(function (d) {
+        return d.name;
+      })
+      .attr("x", d => {
+        return xScale(xValue(d)) - 10;
+      })
+      .attr("fill-opacity", function (d) {
+        if (xScale(xValue(d)) - 10 < 0) {
+          return 0;
+        }
+        return 1;
+      })
+      .attr("stroke-width", function (d) {
+        if (xScale(xValue(d)) - 10 < 0) {
+          return "0px";
+        }
+        return "1px";
+      });
+
+    barUpdate
+      .select(".value")
+      .tween("text", function (d) {
+          var self = this;
+          var i = d3.interpolate(self.textContent, Number(d.value));
+          var prec = (Number(d.value) + "").split("."),
+          round = prec.length > 1 ? Math.pow(10, prec[1].length) : 1;
+          return function (t) {
+            self.textContent = d3.format(".0f")(
+              Math.round(i(t) * round) / round
+            );
+          };
+        })
+        .duration(250)
+        .attr("x", d => xScale(xValue(d)) + 10);
+
+    var barExit = bar
+      .exit()
+      .attr("fill-opacity", 1)
+      .transition()
+      .duration(250);
+    barExit
+      .attr("transform", function (d) {
+        return "translate(0," + "1000" + ")";
+      })
+      .remove()
+      .attr("fill-opacity", 0);
+    barExit
+      .select("rect")
+      .attr("fill-opacity", 0)
+      .attr("width", xScale(currentData[currentData.length - 1]["value"]));
+    barExit
+      .select(".value")
+      .attr("fill-opacity", 0)
+      .attr("x", () => {
+        return xScale(currentData[currentData.length - 1]["value"]);
+      });
+    barExit
+      .select(".barInfo")
+      .attr("fill-opacity", 0)
+      .attr("stroke-width", function (d) {
+        return "0px";
+      })
+      .attr("x", () => {
+        return xScale(currentData[currentData.length - 1]["value"]);
       });
   }
 
@@ -236,6 +353,22 @@ function draw(data) {
     });
   }
 
+  function change() {
+    yScale
+      .domain(currentData.map(d => d.name).reverse())
+      .range([innerHeight, 0]);
+    g.selectAll(".bar")
+      .data(currentData, function (d) {
+        return d.name;
+      })
+      .transition("1")
+      .ease(d3.easeLinear)
+      .duration(250)
+      .attr("transform", function (d) {
+        return "translate(0," + yScale(yValue(d)) + ")";
+      });
+  }
+
   var i = 0;
   var p = 1;
   var inter = setInterval(function next() {
@@ -251,6 +384,6 @@ function draw(data) {
     if (i >= time.length) {
       window.clearInterval(inter);
     }
-  }, 500);
+  }, 250);
 }
 
