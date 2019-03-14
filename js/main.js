@@ -19,7 +19,7 @@ function draw(data) {
   var time = date.sort((x, y) => new Date(x) - new Date(y)); // 时间从前往后排
   var currentdate = time[0].toString();
 
-  d3.select("body").attr("style", "background:#66ccff");
+  d3.select("body").attr("style", "background:#FFFFFF");
   const svg = d3.select("svg");
   const xValue = d => Number(d.value);
   const yValue = d => d.name;
@@ -90,8 +90,7 @@ function draw(data) {
   yScale.range([innerHeight, 0]);
   while(num <= 10){
   	g.append("text")
-    .attr("fill-opacity", 0)
-    .style("fill", "#009988")
+    .style("fill", "#000000")
     .attr("fill-opacity", 1)
     .attr("class", function (d) {
       return "label ";
@@ -169,10 +168,9 @@ function draw(data) {
 
     barEnter
       .append("rect")
-      .attr("fill-opacity", 0)
       .attr("height", 26)
       .attr("y", 50)
-      .style("fill", "#009988")
+      .style("fill", d => config.color[d.country])
       .transition("a")
       .delay(100)
       .duration(100)
@@ -186,13 +184,10 @@ function draw(data) {
       .attr("x", function (d) {
         return xScale(currentData[currentData.length - 1].value);
       })
-      .attr("stroke", "#112233")
-      .attr("class", function () {
-        return "barInfo";
-      })
+      .attr("stroke", d => config.color[d.country])
+      .attr("class", "barInfo")
       .attr("y", 50)
       .attr("stroke-width", "0px")
-      .attr("fill-opacity", 0)
       .transition()
       .delay(100)
       .duration(100)
@@ -200,12 +195,7 @@ function draw(data) {
       .attr("x", d => {
         return xScale(xValue(d)) - 10;
       })
-      .attr("fill-opacity", function (d) {
-        if (xScale(xValue(d)) - 10 < 0) {
-          return 0;
-        }
-        return 1;
-      })
+      .attr("fill-opacity", 1)
       .attr("y", 2)
       .attr("dy", ".5em")
       .attr("text-anchor", function () {
@@ -217,9 +207,15 @@ function draw(data) {
         }
         return "1px";
       })
-      .attr("stroke", function (d) {
-      return "#009988";
-      });
+      .attr("stroke", d => config.color[d.country]);
+
+    barEnter
+      .append("image")
+      .attr("width", 30)
+      .attr("height", 20)
+      .attr("xlink:href", d => "./img/flags/" + d.country + ".png")
+      .attr("x", 10)
+      .attr("y", 2)
 
     barEnter
         .append("text")
@@ -227,8 +223,8 @@ function draw(data) {
           return xScale(currentData[currentData.length - 1].value);
         })
         .attr("y", 50)
-        .attr("fill-opacity", 0)
-        .style("fill", "#123456")
+        .attr("fill-opacity", 1)
+        .style("fill", d => config.color[d.country])
         .transition()
         .duration(200)
         .tween("text", function (d) {
@@ -263,7 +259,7 @@ function draw(data) {
 
     barUpdate
       .select("rect")
-      .style("fill", "#009988")
+      .style("fill", d => config.color[d.country])
       .attr("width", d => xScale(xValue(d)));
 
     var barInfo = barUpdate
@@ -274,12 +270,7 @@ function draw(data) {
       .attr("x", d => {
         return xScale(xValue(d)) - 10;
       })
-      .attr("fill-opacity", function (d) {
-        if (xScale(xValue(d)) - 10 < 0) {
-          return 0;
-        }
-        return 1;
-      })
+      .attr("fill-opacity", 1)
       .attr("stroke-width", function (d) {
         if (xScale(xValue(d)) - 10 < 0) {
           return "0px";
@@ -305,28 +296,23 @@ function draw(data) {
 
     var barExit = bar
       .exit()
-      .attr("fill-opacity", 1)
       .transition()
       .duration(250);
     barExit
       .attr("transform", function (d) {
         return "translate(0," + "1000" + ")";
       })
-      .remove()
-      .attr("fill-opacity", 0);
+      .remove();
     barExit
       .select("rect")
-      .attr("fill-opacity", 0)
       .attr("width", xScale(currentData[currentData.length - 1]["value"]));
     barExit
       .select(".value")
-      .attr("fill-opacity", 0)
       .attr("x", () => {
         return xScale(currentData[currentData.length - 1]["value"]);
       });
     barExit
       .select(".barInfo")
-      .attr("fill-opacity", 0)
       .attr("stroke-width", function (d) {
         return "0px";
       })
