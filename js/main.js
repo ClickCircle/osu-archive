@@ -1,7 +1,7 @@
 data = {}
 
 $(document).ready(function(){
-  var url = "https://rrtyui.github.io/osu-archive/data/osu_standard.csv";
+  var url = "https://clickcircle.github.io/osu-archive/data/osu_standard.csv";
   var data= $.ajax({url:url,async:false}).responseText;
   draw(d3.csvParse(data))
 });
